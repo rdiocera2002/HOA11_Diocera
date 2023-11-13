@@ -1,0 +1,32 @@
+---
+ - name: Install Additional / Update Current packages needed for Docker
+   apt:
+     name:
+     - docker.io
+     - ca-certificates
+     - curl
+     - apt-transport-https
+     - software-properties-common
+     - gnupg2
+     state: latest
+
+ - name: Add an APT Repository Key for Docker
+   apt_key:
+     url: https://download.docker.com/linux/ubuntu/gpg
+     state: present
+
+ - name: Add an APT Repository for the Key of Docker
+   apt_repository:
+     repo: "deb https://download.docker.com/linux/ubuntu focal stable"
+     state: present
+
+ - name: Install the Docker in Ubuntu
+   apt:
+     name: docker
+     state: latest
+
+ - name: Start the Docker Service in Ubuntu
+   service:
+     name: docker
+     state: started
+     enabled: true

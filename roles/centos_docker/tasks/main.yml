@@ -1,0 +1,17 @@
+---
+ - name: Install Additional / Update Current packages needed for Docker
+   yum:
+     name:
+     - gnupg2
+     state: latest
+
+ - name: Install the Docker in CentOS
+   yum:
+     name: docker
+     state: latest
+
+ - name: Start the Docker Service in CentOS
+   service:
+     name: docker
+     state: started
+     enabled: true
