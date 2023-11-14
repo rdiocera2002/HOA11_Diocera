@@ -1,0 +1,74 @@
+---
+- hosts: ubuntu
+  become: true
+  tasks:
+
+  - name: install updates (Ubuntu)
+    tags: always
+    apt:
+      upgrade: dist
+      update_cache: yes
+    when: ansible_distribution == "Ubuntu"
+
+  - name: dpkg configure
+    shell:
+      dpkg --configure -a
+    when: ansible_distribution == "Ubuntu"
+
+  - name: Docker installation
+    apt:
+      name: docker.io
+      state: latest
+    when: ansible_distribution == "Ubuntu"
+
+  - name: Install docker SDK
+    shell:
+      pip install docker-py
+    when: ansible_distribution == "Ubuntu"
+
+  - name: docker enable
+    service:
+      name: docker
+      state: started
+      enabled: true
+
+  - name: Add docker group on the current user
+    shell:
+      usermod -aG docker ralph
+
+  - name: Restart Docker
+    service:
+      name: docker
+      state: restarted
+      enabled: true
+
+  - name: Create build directory
+    file:
+       path: ./root/demo-dockerfile
+       state: directory
+       owner: root
+       group: root
+       mode: '0755'
+
+  - name: copy Dockerfile
+    copy:
+      src: ./docker/Dockerfile
+      dest: ./root/demo-dockerfile/Dockerfile
+      remote_src: yes
+      owner: root
+      group: root
+      mode: '0644'
+
+  - name: Build container image
+    docker_image:
+      name: dockerr
+      source: build
+      build:
+        path: ./root/demo-dockerfile
+        args:
+          listen_port: 8080
+      state: present
+
+  - name: access containerized app
+    shell:
+      docker run -it -d -p 8080:80 dockerr
